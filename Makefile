@@ -7,6 +7,16 @@ destroy-machine:
 generate-certificates:
 	openssl req -newkey rsa:2048 -nodes -sha256 -keyout domain.key -x509 -days 365 -out domain.crt
 
+start-registry-linux:
+	docker-machine scp domain.crt registry-machine:~
+	docker-machine scp domain.key registry-machine:~
+	docker-machine ssh registry-machine docker run -d -p 5000:5000 \
+		-v /home/docker/:/certs/ \
+                -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+                -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+                registry:2
+
+
 start-registry:
 	docker `docker-machine config registry-machine` run -d -p 5000:5000 \
 		-v `pwd`:/certs/ \
